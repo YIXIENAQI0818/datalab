@@ -19,7 +19,8 @@
  *   Difficulty: 1
  */
 int bitXor(int x, int y) {
-    return 2;
+
+    return 1;
 }
 
 /*
@@ -28,7 +29,7 @@ int bitXor(int x, int y) {
  *   Example: samesign(0, 1) = 0, samesign(0, 0) = 1
  *            samesign(-4, -5) = 1, samesign(-4, 5) = 0
  *   Legal ops: >> << ! ^ && if else &
- *   Max ops: 12
+ *   Max ops: 12    
  *   Difficulty: 2
  *
  * Parameters:
