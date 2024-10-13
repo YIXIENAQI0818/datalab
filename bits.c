@@ -20,7 +20,7 @@
  */
 int bitXor(int x, int y) {
 
-    return 1;
+    return ~(~x & y) & ~(x & ~y);
 }
 
 /*
@@ -40,7 +40,16 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
-    return 2;
+    if(x)
+        if(y)
+            return !(x >> 31 ^ y >> 31)
+        else 
+            return 0;
+    else
+        if(y)
+            return 0;
+        else
+            return 1;
 }
 
 /*
@@ -53,7 +62,14 @@ int samesign(int x, int y) {
  *   Difficulty: 4
  */
 int logtwo(int v) {
-    return 2;
+    int result = 0;
+    result |= ((v >> 16) > 0) << 4;
+    result |= ((v >> 8 | result) > 0) << 3;
+    result |= ((v >> 4 | result) > 0) << 2;
+    result |= ((v >> 2 | result) > 0) << 1;
+    result |= ((v >> 1 | result) > 0) ;
+    return result;
+    
 }
 
 /*
@@ -66,7 +82,12 @@ int logtwo(int v) {
  *    Difficulty: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+    int swap_n = n << 3;
+    int swap_m = m << 3;
+    int x_n = (x >> swap_n) & 0xFF;
+    int x_m = (x >> swap_m) & 0xFF;
+    x &= ~((0xFF << swap_n) | (0xFF << swap_m));
+    return x | (x_n << swap_m) | (x_m << swap_n);   
 }
 
 /*
@@ -78,7 +99,13 @@ int byteSwap(int x, int n, int m) {
  *   Difficulty: 3
  */
 unsigned reverse(unsigned v) {
-    return 2;
+    v = (v >> 16) | (v << 16);
+    v = ((v & 0xFF00FF00) >> 8) | ((v & 0x00FF00FF) << 8);
+    v = ((v & 0xF0F0F0F0) >> 4) | ((v & 0x0F0F0F0F) << 4);
+    v = ((v & 0xCCCCCCCC) >> 2) | ((v & 0x33333333) << 2);
+    v = ((v & 0xAAAAAAAA) >> 1) | ((v & 0x55555555) << 1);
+    return v;
+    
 }
 
 /*
@@ -90,7 +117,9 @@ unsigned reverse(unsigned v) {
  *   Difficulty: 3
  */
 int logicalShift(int x, int n) {
-    return 2;
+    int mask = 0x7FFFFFFF >> n;
+    mask |= mask + 1;
+    return (x >> n) & mask;
 }
 
 /*
@@ -102,7 +131,26 @@ int logicalShift(int x, int n) {
  *   Difficulty: 4
  */
 int leftBitCount(int x) {
-    return 2;
+    int count = 0;
+    
+    count += !((0xFFFFFFFF & x) ^ 0xFFFFFFFF);
+
+    count += !((0xFFFF0000 & x) ^ 0xFFFF0000) << 4;
+    x <<= !((0xFFFF0000 & x) ^ 0xFFFF0000) << 4;
+
+    count += !((0xFF000000 & x) ^ 0xFF000000) << 3;
+    x <<= !((0xFF000000 & x) ^ 0xFF000000) << 3;
+
+    count += !((0xF0000000 & x) ^ 0xF0000000) << 2;
+    x <<= !((0xF0000000 & x) ^ 0xF0000000) << 2;
+
+    count += !((0xC0000000 & x) ^ 0xC0000000) << 1;
+    x <<= !((0xC0000000 & x) ^ 0xC0000000) << 1;
+
+    count += !((0x80000000 & x) ^ 0x80000000);
+
+    return count;
+
 }
 
 /*
@@ -114,7 +162,44 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
-    return 2;
+    unsigned exp = 0, s = 0, E = 0  , v = 0 , dif = 0 , mask1 = 0, mask2 = 0;
+    
+    if(x == 0)
+    return 0;
+
+    if(x < 0)
+    {
+        s = 0x80000000;
+        x = -x;
+    }
+
+    while(x >> exp != 0)
+        exp++;
+    exp--;
+
+
+    E = exp + 127;
+    x -= (1 << exp);
+    dif = exp - 23;
+    mask1 = ~(0xFFFFFFFF << dif);
+    mask2 = 1 << (dif - 1);
+
+    if(exp <= 23)
+    {
+        x <<= (23 - exp);
+    }
+    else
+    {
+        v = x & mask1; 
+        x >>= dif;
+
+        if(v > mask2)
+            x++;
+        else if(v == mask2  && (x & 1))
+            x++;
+    }
+
+    return s | E << 23 | x;
 }
 
 /*
